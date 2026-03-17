@@ -1,9 +1,4 @@
-/* ═══════════════════════════════════════════════════════════
-   AlgoViz — script.js  (v2)
-   Tabs: Sortierung | Suche | Pathfinding | Graph
-   ═══════════════════════════════════════════════════════════ */
 
-// ── STATE ─────────────────────────────────────────────────────────
 let array         = [];
 let isRunning     = false;
 let stopFlag      = false;
@@ -15,14 +10,14 @@ let currentGraph  = 'bfs';
 let comparisons   = 0;
 let steps         = 0;
 
-// Pause/Resume support
-let pauseResolve  = null;   // called when user resumes
+
+let pauseResolve  = null;   
 let isPaused      = false;
 
-// Saved generator state for "Weitermachen"
+
 let savedGenerator = null;
 
-// ── DOM ───────────────────────────────────────────────────────────
+
 const nodesRow        = document.getElementById('nodesRow');
 const btnGenerate     = document.getElementById('btnGenerate');
 const btnAdd          = document.getElementById('btnAdd');
@@ -47,7 +42,6 @@ const dialogContinue  = document.getElementById('dialogContinue');
 const dialogRestart   = document.getElementById('dialogRestart');
 const dialogCancel    = document.getElementById('dialogCancel');
 
-// ── DESCRIPTIONS ──────────────────────────────────────────────────
 const descriptions = {
   bubble:   { title: 'Bubble Sort',       text: 'Bubble Sort vergleicht benachbarte Elemente und tauscht sie, wenn sie in der falschen Reihenfolge sind. Dieser Vorgang wiederholt sich, bis alles sortiert ist. O(n²) im Durchschnitt.' },
   merge:    { title: 'Merge Sort',         text: 'Merge Sort teilt das Array rekursiv in Hälften, bis nur einzelne Elemente übrig sind. Dann werden die Teile sortiert zusammengeführt. Sehr effizient: O(n log n) immer.' },
@@ -60,7 +54,7 @@ const descriptions = {
   dfs:      { title: 'DFS — Tiefensuche',  text: 'Depth-First Search geht so tief wie möglich in einen Pfad bevor es zurückgeht. Verwendet einen Stack (LIFO). Sehr speichereffizient, garantiert aber nicht den kürzesten Pfad.' },
 };
 
-// ── HELPERS ───────────────────────────────────────────────────────
+
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const getDelay = () => parseInt(speedSlider.value);
 
@@ -84,7 +78,7 @@ function setUIRunning(running) {
   [btnGenerate, btnAdd, btnDelete, btnReset].forEach(b => { if (b) b.disabled = running; });
 }
 
-// ── STOP DIALOG ───────────────────────────────────────────────────
+
 function showStopDialog() {
   stopDialog.classList.remove('hidden');
 }
@@ -92,7 +86,7 @@ function hideStopDialog() {
   stopDialog.classList.add('hidden');
 }
 
-// "Weitermachen" — resume the paused async function
+
 dialogContinue.addEventListener('click', () => {
   hideStopDialog();
   if (pauseResolve) {
@@ -105,7 +99,7 @@ dialogContinue.addEventListener('click', () => {
   }
 });
 
-// "Von Anfang" — restart from scratch
+
 dialogRestart.addEventListener('click', () => {
   hideStopDialog();
   isPaused = false;
@@ -126,47 +120,45 @@ dialogRestart.addEventListener('click', () => {
   setStatus('Zurückgesetzt. Drücke Starten.', '');
 });
 
-// "Abbrechen" — just close dialog, stay paused
+
 dialogCancel.addEventListener('click', () => {
   hideStopDialog();
-  // stay in paused state — user can press Start to continue or Stop again
 });
 
-// Stop button: pause execution and show dialog
+
 btnStop.addEventListener('click', () => {
   if (!isRunning) return;
   isPaused = true;
-  stopFlag = true;   // breaks out of the inner sleep loop
+  stopFlag = true;  
   setUIRunning(false);
   setStatus('Pausiert.', '');
   showStopDialog();
 });
 
-/** Called inside algorithms instead of plain sleep — respects pause */
+
 async function animDelay() {
   await sleep(getDelay());
-  // If paused, block until resumed or cancelled
   if (isPaused) {
     await new Promise(resolve => { pauseResolve = resolve; });
   }
 }
 
-// ── TAB SWITCHING ─────────────────────────────────────────────────
+
 function switchTab(tab) {
   if (isRunning) return;
   currentTab = tab;
 
-  // Nav
+  
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
 
-  // Sidebar sections
+ 
   const show = id => document.getElementById(id)?.classList.remove('hidden');
   const hide = id => document.getElementById(id)?.classList.add('hidden');
 
   ['arraySection','sortSection','searchSection','pathSection','graphSection'].forEach(hide);
   ['vizAreaNodes','vizAreaPath','vizAreaGraph'].forEach(hide);
 
-  // Legend groups
+
   document.querySelectorAll('.node-leg').forEach(el => el.classList.add('hidden'));
   document.querySelectorAll('.path-leg').forEach(el => el.classList.add('hidden'));
   document.querySelectorAll('.graph-leg').forEach(el => el.classList.add('hidden'));
@@ -206,11 +198,11 @@ function updateDescription() {
   statAlgo.textContent  = info.title || '—';
 }
 
-// ── START BUTTON ──────────────────────────────────────────────────
+
 async function startVisualization() {
   if (isRunning) return;
 
-  // If paused (dialog was cancelled), resume
+  
   if (isPaused && pauseResolve) {
     isPaused = false;
     stopFlag = false;
@@ -248,9 +240,7 @@ async function startVisualization() {
 
 btnStart.addEventListener('click', startVisualization);
 
-/* ═══════════════════════════════════════════════════════════
-   ARRAY MANAGEMENT
-   ═══════════════════════════════════════════════════════════ */
+
 function generateArray() {
   if (isRunning) return;
   array = Array.from({ length: 8 }, () => Math.floor(Math.random() * 90) + 10);
@@ -305,9 +295,7 @@ inputAdd.addEventListener('keydown', e => { if (e.key === 'Enter') addNumber(); 
 btnDelete.addEventListener('click', deleteNumber);
 inputDelete.addEventListener('keydown', e => { if (e.key === 'Enter') deleteNumber(); });
 
-/* ═══════════════════════════════════════════════════════════
-   BUBBLE SORT
-   ═══════════════════════════════════════════════════════════ */
+
 async function bubbleSort() {
   const arr = [...array];
   const n = arr.length;
@@ -338,9 +326,7 @@ async function bubbleSort() {
   setStatus('✓ Vollständig sortiert!', 'done');
 }
 
-/* ═══════════════════════════════════════════════════════════
-   MERGE SORT
-   ═══════════════════════════════════════════════════════════ */
+
 async function mergeSortStart() {
   const arr = [...array];
   await mergeSort(arr, 0, arr.length - 1);
@@ -374,9 +360,7 @@ async function merge(arr, l, m, r) {
   while (j<right.length) { if(stopFlag)return; arr[k++]=right[j++]; array=[...arr]; steps++; updateStats(); renderNodes({[k-1]:'comparing'}); await sleep(getDelay()*.3); }
 }
 
-/* ═══════════════════════════════════════════════════════════
-   QUICK SORT
-   ═══════════════════════════════════════════════════════════ */
+
 async function quickSortStart() {
   const arr = [...array];
   await quickSort(arr, 0, arr.length-1);
@@ -415,9 +399,7 @@ async function partition(arr, low, high) {
   return i+1;
 }
 
-/* ═══════════════════════════════════════════════════════════
-   LINEAR SEARCH
-   ═══════════════════════════════════════════════════════════ */
+
 async function linearSearch(target) {
   for (let i=0; i<array.length; i++) {
     if (stopFlag) return;
@@ -434,9 +416,7 @@ async function linearSearch(target) {
   setStatus(`✗ ${target} nicht gefunden.`,'error');
 }
 
-/* ═══════════════════════════════════════════════════════════
-   BINARY SEARCH
-   ═══════════════════════════════════════════════════════════ */
+
 async function binarySearch(target) {
   array.sort((a,b)=>a-b); renderNodes(); setStatus('Array sortiert. Suche…','running');
   await animDelay();
@@ -463,9 +443,7 @@ async function binarySearch(target) {
   setStatus(`✗ ${target} nicht gefunden.`,'error');
 }
 
-/* ═══════════════════════════════════════════════════════════
-   PATHFINDING
-   ═══════════════════════════════════════════════════════════ */
+
 const ROWS=20, COLS=42;
 let gridCells=[], isMouseDown=false, dragMode=null;
 let startPos={r:10,c:4}, endPos={r:10,c:37};
@@ -610,9 +588,7 @@ function runAstar() {
 document.getElementById('btnClearWalls').addEventListener('click',()=>{buildGrid(false);renderGrid();});
 document.getElementById('btnPathReset').addEventListener('click',()=>{buildGrid(false);renderGrid();resetStats();setStatus('Grid zurückgesetzt.');});
 
-/* ═══════════════════════════════════════════════════════════
-   GRAPH TRAVERSAL
-   ═══════════════════════════════════════════════════════════ */
+
 const graphCanvas = document.getElementById('graphCanvas');
 const ctx = graphCanvas.getContext('2d');
 let graphNodes=[], graphEdges=[], graphStartNode=0;
@@ -736,9 +712,7 @@ document.getElementById('btnGraphGenerate').addEventListener('click',()=>{
   generateGraph(); drawGraph(); resetStats(); setStatus('Neuer Graph generiert.');
 });
 
-/* ═══════════════════════════════════════════════════════════
-   ALGO SELECTION EVENTS
-   ═══════════════════════════════════════════════════════════ */
+
 document.querySelectorAll('.algo-item[data-algo]').forEach(btn=>{
   btn.addEventListener('click',()=>{
     document.querySelectorAll('.algo-item[data-algo]').forEach(b=>b.classList.remove('active'));
@@ -767,17 +741,13 @@ document.querySelectorAll('.algo-item[data-graph]').forEach(btn=>{
   });
 });
 
-/* ═══════════════════════════════════════════════════════════
-   TABS + SPEED
-   ═══════════════════════════════════════════════════════════ */
+
 document.querySelectorAll('.tab').forEach(btn=>{
   btn.addEventListener('click',()=>switchTab(btn.dataset.tab));
 });
 speedSlider.addEventListener('input',()=>{ speedLabel.textContent=speedSlider.value+'ms'; });
 
-/* ═══════════════════════════════════════════════════════════
-   INIT
-   ═══════════════════════════════════════════════════════════ */
+
 function init() {
   array=[64,34,25,12,22,11,90,47]; renderNodes();
   updateDescription();
